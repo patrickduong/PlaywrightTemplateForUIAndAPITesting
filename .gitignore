@@ -1,0 +1,13 @@
+/test-results
+/playwright-report
+/node_modules
+/configs/auth
+/allure-results
+/allure-report
+/TEST_PROJECT/CONFIGS/
+.DS_Store
+
+# Playwright
+node_modules/
+/blob-report/
+/playwright/.cache/
