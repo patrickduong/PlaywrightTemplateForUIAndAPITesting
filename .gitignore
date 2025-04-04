@@ -1,0 +1,7 @@
+/test-results
+/playwright-report
+/node_modules
+/configs/auth
+/allure-results
+/allure-report
+.DS_Store
