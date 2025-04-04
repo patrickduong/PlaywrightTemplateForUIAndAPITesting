@@ -28,8 +28,8 @@ async function getAccessToken(environment: string) {
     // Parse the response to get the access token
     const jsonData = await response.json();
 
-    if (jsonData && jsonData.access_token) {
-      token = jsonData.access_token;
+    if (jsonData && jsonData.token) {
+      token = jsonData.token;
 
       // You can set the token in the environment or use it further as needed
       setEnvValue(environment, 'ACCESS_TOKEN', token);

@@ -40,6 +40,12 @@ export default defineConfig({
     timeout: 120000, //set 2 minutes timeout for each test 
 
     projects: [
+
+        {
+            name: 'api_testing',
+            testDir: 'TEST_PROJECT/API/tests',
+            testMatch: '/features/**/*.spec.ts'
+        },
        
         {
             name: 'setup_e2e',

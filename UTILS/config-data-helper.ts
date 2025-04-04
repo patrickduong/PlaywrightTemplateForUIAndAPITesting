@@ -17,7 +17,7 @@ function replacePlaceholders(value: string): string {
 //----------
 export function loadDataConfig(datadir: string, datatype: string, environment: string = 'local') {
 
-    const configPath = path.resolve(__dirname, `${datadir}/data-test/${datatype}/${datatype}_data_${environment}.json`);
+    const configPath = path.resolve(__dirname, `../${datadir}/data-test/${datatype}/${datatype}_data_${environment}.json`);
 
     if (!fs.existsSync(configPath)) {
         throw new Error(`DataConfig "${datatype}" file for environment "${environment}" not found at ${configPath}`);
