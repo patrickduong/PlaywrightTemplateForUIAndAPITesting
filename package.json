@@ -4,23 +4,22 @@
     "description": "this is demo template for web and api testing basic",
     "main": "index.js",
     "scripts": {
-      "test:e2e:local": "ENV=local npx playwright test --project=e2e_testing",
-      "test:api:local": "ENV=local npx playwright test --project=api_testing"
+        "test:e2e:local": "ENV=local npx playwright test --project=e2e_testing",
+        "test:api:local": "ENV=local npx playwright test --project=api_testing"
     },
     "keywords": [],
     "author": "MyDuong",
     "license": "ISC",
     "devDependencies": {
-      "@faker-js/faker": "^9.3.0",
-      "@playwright/test": "^1.48.0",
-      "allure-commandline": "^2.31.0",
-      "allure-playwright": "3.0.5",
-      "dotenv": "^16.4.5",
-      "ts-node": "^10.9.2",
-      "typescript": "^5.6.3"
+        "@faker-js/faker": "^9.3.0",
+        "@playwright/test": "^1.48.0",
+        "allure-commandline": "^2.31.0",
+        "allure-playwright": "3.0.5",
+        "dotenv": "^16.4.5",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.6.3"
     },
     "dependencies": {
-      "package-lock.json": "^1.0.0"
+        "package-lock.json": "^1.0.0"
     }
-  }
-  
+}
