@@ -4,7 +4,7 @@ import { loadEnv } from './UTILS/loadenv';
 
 require('dotenv').config();
 
-export const STORAGE_STATE = path.join(__dirname, 'E2E/configs/.auth/user.json');
+export const STORAGE_STATE = path.join(__dirname, 'configs/.auth/user.json');
 
 // Detect the environment (default to 'staging' if not provided)
 export const environment = process.env.ENV || 'local';
@@ -42,9 +42,15 @@ export default defineConfig({
     projects: [
 
         {
+            name: 'setup_api',
+            testDir: 'TEST_PROJECT/API/tests',
+            testMatch: '/setups/**/*.setup.ts'
+        },
+        {
             name: 'api_testing',
             testDir: 'TEST_PROJECT/API/tests',
-            testMatch: '/features/**/*.spec.ts'
+            testMatch: '/features/**/*.spec.ts',
+            dependencies: ['setup_api']
         },
        
         {
