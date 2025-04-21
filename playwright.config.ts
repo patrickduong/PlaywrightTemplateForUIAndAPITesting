@@ -1,7 +1,6 @@
 import { defineConfig } from '@playwright/test';
 import path from 'path';
 import { loadEnv } from './UTILS/loadenv';
-import { getAccessToken } from './TEST_PROJECT/API/tests/setups/auth.helper';
 
 require('dotenv').config();
 
@@ -12,9 +11,6 @@ export const environment = process.env.ENV || 'local';
 
 // Load the correct environment variables
 loadEnv(environment);
-
-getAccessToken(environment);
-
 
 //Global config using for all tests
 export default defineConfig({
@@ -68,7 +64,7 @@ export default defineConfig({
             use: {
                 browserName: 'chromium',
                 baseURL: process.env.BASE_URL,
-                headless: false,  //set to true for run tests in headless mode 
+                headless: true,  //set to true for run tests in headless mode 
                 screenshot: 'only-on-failure',  // Take screenshot on failure
                 video: 'retain-on-failure',  // Capture video on failure
                 launchOptions: { args: ["--start-maximized"] }, // start browser with maximize size
