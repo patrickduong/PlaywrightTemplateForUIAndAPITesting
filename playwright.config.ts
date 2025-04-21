@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 import path from 'path';
 import { loadEnv } from './UTILS/loadenv';
+import { getAccessToken } from './TEST_PROJECT/API/tests/setups/auth.helper';
 
 require('dotenv').config();
 
@@ -11,6 +12,9 @@ export const environment = process.env.ENV || 'local';
 
 // Load the correct environment variables
 loadEnv(environment);
+
+getAccessToken(environment);
+
 
 //Global config using for all tests
 export default defineConfig({
@@ -44,7 +48,7 @@ export default defineConfig({
         {
             name: 'setup_api',
             testDir: 'TEST_PROJECT/API/tests',
-            testMatch: '/setups/**/*.setup.ts'
+            testMatch: '/setups/auth.helper.ts',
         },
         {
             name: 'api_testing',
@@ -56,7 +60,7 @@ export default defineConfig({
         {
             name: 'setup_e2e',
             testDir: 'TEST_PROJECT/E2E/tests',
-            testMatch: '/setups/**/*.setup.ts'
+            testMatch: '/setups/login.setup.ts'
         },
 
         {
