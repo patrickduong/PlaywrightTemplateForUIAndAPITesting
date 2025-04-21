@@ -42,6 +42,47 @@ async function getAccessToken(environment: string) {
   await apiContext.dispose();
 }
 
+async function getAccessTokenBasic(environment: string) {
+  let token: string;
+  const authURL = process.env.AUT_API_URL!;
+  const autSubUrl = process.env.PATH_URL!;
+  const apiContext: APIRequestContext = await request.newContext();
+
+  try {
+    const response = await apiContext.post(`${authURL}${autSubUrl}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        email: `${process.env.USER_NAME!}`,
+        password: `${process.env.PASS_WORD!}`,
+      },
+    })
+    console.log("get token response" + response);
+
+    if (!response.ok()) {
+      throw new Error(
+        `Failed to authenticate - basic: ${response.status()} - ${response.statusText()}`
+      )
+    }
+
+    // Parse the response to get the access token
+    const jsonData = await response.json();
+
+    if (jsonData && jsonData.token) {
+      token = jsonData.token;
+
+      // You can set the token in the environment or use it further as needed
+      setEnvValue(environment, 'ACCESS_TOKEN', token);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  // Dispose of the context
+  await apiContext.dispose();
+}
+
 function setEnvValue(environment: string, key: string | RegExp, value: string) {
   const fs = require('fs');
   const os = require('os');
@@ -63,4 +104,4 @@ function setEnvValue(environment: string, key: string | RegExp, value: string) {
   // write everything back to the file system
   fs.writeFileSync(path, ENV_VARS.join(os.EOL));
 }
-export { getAccessToken, setEnvValue };
+export { getAccessToken, getAccessTokenBasic, setEnvValue };

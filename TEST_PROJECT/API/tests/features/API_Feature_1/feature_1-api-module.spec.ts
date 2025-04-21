@@ -1,34 +1,53 @@
-import { faker } from '@faker-js/faker/locale/en';
-import { User } from "../../../dataobject/object.types";
-import { environment } from "../../../../../playwright.config";
-import { loadDataConfig } from "../../../../../UTILS/config-data-helper";
-import { DateTimeDataHelper } from "../../../../../UTILS/date-time-data-helper";
-import { test } from "../../../base/api-base-test"
+import { faker } from '@faker-js/faker/locale/en'
+import { Contact, User } from '../../../dataobject/object.types'
+import { environment } from '../../../../../playwright.config'
+import { loadDataConfig } from '../../../../../UTILS/config-data-helper'
+import { DateTimeDataHelper } from '../../../../../UTILS/date-time-data-helper'
+import { test } from '../../../base/api-base-test'
 
-test.describe('Verify feature module',{ tag: '@feature-1-api-create' }, () => {
-  const generateTestDate = new DateTimeDataHelper();
-  const BASE_URL = process.env.API_URL;
-  const USER_URL = `${BASE_URL}` + '/users';
+test.describe('Verify feature module', { tag: '@feature-1-api-create' }, () => {
+  const generateTestDate = new DateTimeDataHelper()
+  const BASE_URL = process.env.API_URL
+  const todayDate = generateTestDate.getFormattedDateWithOffset('days', 0)
 
-  const singleUser : User = loadDataConfig('TEST_PROJECT/API','user', environment);
-  const todayDate = generateTestDate.getFormattedDateWithOffset('days', 0);
+  const CONTACT_URL = `${BASE_URL}` + '/contacts'
+  const singleContact: Contact = loadDataConfig(
+    'TEST_PROJECT/API',
+    'contact',
+    environment
+  )
 
-  const User: User = {
-      firstName: singleUser.firstName,
-      lastName: singleUser.lastName,
-      email: faker.internet.email(({ firstName: 'John', lastName: 'Doe', provider: 'test.com' })),
-      password: ''
+  const Contact: Contact = {
+    firstName: singleContact.firstName,
+    lastName: singleContact.lastName,
+    birthdate: todayDate,
+    email: faker.internet.email({
+      firstName: 'John',
+      lastName: 'Doe',
+      provider: 'test.com',
+    }),
+    phone: faker.phone.number({ style: 'national' }),
+    street1: singleContact.street1,
+    street2: singleContact.street2,
+    city: singleContact.city,
+    stateProvince: singleContact.stateProvince,
+    postalCode: singleContact.postalCode,
+    country: singleContact.country,
   }
 
-  test('Create new user on TodayDate', async ({ apiContext, assertResponseCode }) => {
-    const userDataToday = { ...User, password: todayDate }
-    const userTodayDateResponse = await apiContext.post(USER_URL, { data: userDataToday });
+  test('Create new contact on TodayDate', async ({
+    apiContext,
+    assertResponseCode,
+  }) => {
+    const contactDataToday = { ...Contact }
+    const contactTodayDateResponse = await apiContext.post(CONTACT_URL, {
+      data: contactDataToday,
+    })
 
-    await assertResponseCode(userTodayDateResponse, 201);
-    const createTodayDateData = await userTodayDateResponse.json();
+    await assertResponseCode(contactTodayDateResponse, 201)
+    const createContactTodayDateData = await contactTodayDateResponse.json()
 
-    const createUser_ID = createTodayDateData._id;
-    console.log('user_id: ' + createUser_ID);
-    
-  });
-});
+    const createContact_ID = createContactTodayDateData._id
+    console.log('contact_id: ' + `${createContact_ID}`)
+  })
+})

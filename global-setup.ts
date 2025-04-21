@@ -1,4 +1,4 @@
-import { getAccessToken } from './TEST_PROJECT/API/tests/setups/auth.helper';
+import { getAccessToken, getAccessTokenBasic } from './TEST_PROJECT/API/tests/setups/auth.helper';
 import { FileHelper } from './UTILS/file-helper';
 import { environment } from './playwright.config';
 
@@ -10,5 +10,6 @@ export default async function globalSetup() {
   FileHelper.cleanDirectory(resultsDir);
   FileHelper.cleanDirectory(reportDir);
 
-  getAccessToken(environment);
+  // getAccessToken(environment);
+  getAccessTokenBasic(environment);
 }

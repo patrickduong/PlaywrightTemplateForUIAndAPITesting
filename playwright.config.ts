@@ -44,7 +44,7 @@ export default defineConfig({
         {
             name: 'setup_api',
             testDir: 'TEST_PROJECT/API/tests',
-            testMatch: '/setups/**/*.setup.ts'
+            testMatch: '/setups/auth.helper.ts',
         },
         {
             name: 'api_testing',
@@ -56,7 +56,7 @@ export default defineConfig({
         {
             name: 'setup_e2e',
             testDir: 'TEST_PROJECT/E2E/tests',
-            testMatch: '/setups/**/*.setup.ts'
+            testMatch: '/setups/login.setup.ts'
         },
 
         {
@@ -64,7 +64,7 @@ export default defineConfig({
             use: {
                 browserName: 'chromium',
                 baseURL: process.env.BASE_URL,
-                headless: false,  //set to true for run tests in headless mode 
+                headless: true,  //set to true for run tests in headless mode 
                 screenshot: 'only-on-failure',  // Take screenshot on failure
                 video: 'retain-on-failure',  // Capture video on failure
                 launchOptions: { args: ["--start-maximized"] }, // start browser with maximize size
