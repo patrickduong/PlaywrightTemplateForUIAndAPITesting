@@ -46,37 +46,77 @@ async function getAccessTokenBasic(environment: string) {
   let token: string;
   const authURL = process.env.AUT_API_URL!;
   const autSubUrl = process.env.PATH_URL!;
+  const username = process.env.USER_NAME!;
+  const password = process.env.PASS_WORD!;
   const apiContext: APIRequestContext = await request.newContext();
 
   try {
-    const response = await apiContext.post(`${authURL}${autSubUrl}`, {
+    const loginUrl = `${authURL}${autSubUrl}`;
+    console.log('');
+    console.log('--- Attempting authentication ---');
+    console.log('URL: ' + loginUrl);
+    console.log('Username: ' + username);
+
+    const response = await apiContext.post(loginUrl, {
       headers: {
         'Content-Type': 'application/json',
       },
       data: {
-        email: `${process.env.USER_NAME!}`,
-        password: `${process.env.PASS_WORD!}`,
+        email: username,
+        password: password,
       },
     })
-    console.log("get token response" + response);
+
+    const responseStatus = response.status();
+    console.log('Response Status: ' + responseStatus);
 
     if (!response.ok()) {
+      const errorBody = await response.text();
+      console.log('');
+      console.log('ERROR: Authentication failed at: ' + loginUrl);
+      console.log('ERROR: Status: ' + responseStatus);
+      console.log('ERROR: Response: ' + errorBody);
+      console.log('');
+      console.log('Please verify:');
+      console.log('  1. Username/Email is correct: ' + username);
+      console.log('  2. Password is correct');
+      console.log('  3. Account exists on: ' + authURL);
       throw new Error(
-        `Failed to authenticate - basic: ${response.status()} - ${response.statusText()}`
+        'Failed to authenticate - basic: ' + responseStatus + ' - ' + response.statusText()
       )
     }
 
     // Parse the response to get the access token
     const jsonData = await response.json();
+    console.log('Authentication successful');
+    console.log('Response data: ' + JSON.stringify(jsonData));
 
+    // Try multiple possible token keys
     if (jsonData && jsonData.token) {
       token = jsonData.token;
-
-      // You can set the token in the environment or use it further as needed
+      console.log('Token obtained (key: token)');
       setEnvValue(environment, 'ACCESS_TOKEN', token);
+      console.log('Token saved to .env.' + environment);
+    } else if (jsonData && jsonData.accessToken) {
+      token = jsonData.accessToken;
+      console.log('Token obtained (key: accessToken)');
+      setEnvValue(environment, 'ACCESS_TOKEN', token);
+      console.log('Token saved to .env.' + environment);
+    } else if (jsonData && jsonData.access_token) {
+      token = jsonData.access_token;
+      console.log('Token obtained (key: access_token)');
+      setEnvValue(environment, 'ACCESS_TOKEN', token);
+      console.log('Token saved to .env.' + environment);
+    } else {
+      console.log('');
+      console.log('WARNING: No token found in response');
+      console.log('Response keys: ' + Object.keys(jsonData).join(', '));
+      console.log('Full response: ' + JSON.stringify(jsonData));
     }
   } catch (error) {
-    console.error(error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.log('');
+    console.log('ERROR: Authentication error: ' + errorMsg);
   }
 
   // Dispose of the context
