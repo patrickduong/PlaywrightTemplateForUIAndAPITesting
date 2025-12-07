@@ -17,7 +17,8 @@ export default async function globalTeardown() {
 
 
   } catch (error) {
-    console.error('An error occurred:', error.message);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('An error occurred:', errorMessage);
     console.error('Please check if the Allure CLI is installed and properly configured.');
   }
 

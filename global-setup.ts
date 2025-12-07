@@ -10,6 +10,15 @@ export default async function globalSetup() {
   FileHelper.cleanDirectory(resultsDir);
   FileHelper.cleanDirectory(reportDir);
 
-  // getAccessToken(environment);
-  getAccessTokenBasic(environment);
+  // Attempt to get access token for authenticated endpoints
+  // Note: The contact list API may not require authentication for basic CRUD operations
+  try {
+    // getAccessToken(environment);
+    await getAccessTokenBasic(environment);
+  } catch (error) {
+    console.log('');
+    console.log('WARNING: Could not obtain access token. Some API tests may fail if authentication is required.');
+    console.log('Make sure your test account credentials are correct in .env.local');
+    console.log('');
+  }
 }
