@@ -1,7 +1,11 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { DateTimeDataHelper } from './date-time-data-helper';
 import { DynamicDataGenerator } from './dynamic-data-generator';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * ConfigDataHelper provides methods to load and process test data configurations
@@ -52,7 +56,7 @@ export function loadDataConfig(datadir: string, datatype: string, environment: s
         const fileData = fs.readFileSync(configPath, 'utf-8');
         const configData = JSON.parse(fileData);
 
-        console.log(`Loaded configuration data from ${configPath}`);
+        console.log(`✓ Loaded configuration data from ${configPath}`);
 
         // Replace placeholders in config data
         const configString = JSON.stringify(configData, (key, value) => {

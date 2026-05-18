@@ -1,25 +1,36 @@
 import { execSync } from 'child_process';
 import { FileHelper } from './UTILS/file-helper';
 
-export default async function globalTeardown() {
-  const cookiesDir = './configs/.auth';
+const cookiesDir = './configs/.auth';
+const isCI = process.env.CI === 'true';
 
-  FileHelper.cleanDirectory(cookiesDir); // clear session after done test
-
-  // Generate and open the Allure report
+export default async function globalTeardown(): Promise<void> {
+  // Clean up authentication files
   try {
-    
-    console.log('Generating Allure report...');
-    execSync('npx allure generate ./allure-results --clean', { stdio: 'inherit' });
-
-    console.log('Opening Allure report...');
-    execSync('npx allure open ./allure-report', { stdio: 'inherit' });
-
-
+    FileHelper.cleanDirectory(cookiesDir);
+    console.log('✓ Cleaned up session artifacts');
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('An error occurred:', errorMessage);
-    console.error('Please check if the Allure CLI is installed and properly configured.');
+    console.warn('⚠ Warning: Could not clean auth files:', error instanceof Error ? error.message : error);
   }
 
+  // Generate Allure report
+  try {
+    console.log('📊 Generating Allure report...');
+    execSync('npx allure generate ./allure-results --clean -o ./allure-report', {
+      stdio: 'inherit',
+    });
+    console.log('✓ Allure report generated successfully');
+
+    // Only open report if not in CI and explicitly requested
+    if (!isCI && process.env.OPEN_REPORT !== 'false') {
+      console.log('🌐 Opening Allure report in browser...');
+      execSync('npx allure open ./allure-report', {
+        stdio: 'inherit',
+      });
+    }
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('❌ Error generating Allure report:', errorMsg);
+    console.error('   Make sure the Allure CLI is installed: npm install -g allure-commandline');
+  }
 }

@@ -3,24 +3,29 @@
     "version": "1.0.0",
     "description": "this is demo template for web and api testing basic",
     "main": "index.js",
+    "type": "module",
     "scripts": {
         "test:e2e:local": "ENV=local npx playwright test --project=e2e_testing",
-        "test:api:local": "ENV=local npx playwright test --project=api_testing"
+        "test:api:local": "ENV=local npx playwright test --project=api_testing",
+        "test:all": "ENV=local npx playwright test",
+        "test:debug": "ENV=local npx playwright test --debug",
+        "test:ui": "ENV=local npx playwright test --ui",
+        "test:e2e:ci": "CI=true HEADLESS=true ENV=local npx playwright test --project=e2e_testing --workers=4",
+        "test:api:ci": "CI=true HEADLESS=true ENV=local npx playwright test --project=api_testing --workers=4",
+        "lint": "tsc --noEmit"
     },
     "keywords": [],
     "author": "MyDuong",
     "license": "ISC",
     "devDependencies": {
         "@faker-js/faker": "^9.3.0",
-        "@playwright/test": "^1.48.0",
-        "@types/node": "^20.10.0",
+        "@playwright/test": "^1.50.1",
+        "@types/node": "^22.10.2",
         "allure-commandline": "^2.31.0",
-        "allure-playwright": "3.0.5",
-        "dotenv": "^16.4.5",
+        "allure-playwright": "^3.0.5",
+        "dotenv": "^16.5.0",
         "ts-node": "^10.9.2",
-        "typescript": "^5.6.3"
+        "typescript": "^5.7.2"
     },
-    "dependencies": {
-    }
-
+    "dependencies": {}
 }

@@ -1,4 +1,60 @@
-import { APIRequestContext, request } from '@playwright/test'
+import { APIRequestContext, request } from '@playwright/test';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+
+/**
+ * Register a new user account
+ * @param apiContext - Playwright API request context
+ * @param baseURL - API base URL
+ * @param email - User email
+ * @param password - User password
+ * @returns True if registration successful or user exists, False if registration failed
+ */
+async function registerUser(
+  apiContext: APIRequestContext,
+  baseURL: string,
+  email: string,
+  password: string
+): Promise<boolean> {
+  try {
+    console.log('🔄 Attempting user registration...');
+    console.log(`   Email: ${email}`);
+
+    const response = await apiContext.post(`${baseURL}/users`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        firstName: 'Test',
+        lastName: 'User',
+        email: email,
+        password: password,
+      },
+    });
+
+    const responseStatus = response.status();
+    const responseBody = await response.text();
+
+    console.log(`   Response Status: ${responseStatus}`);
+
+    if (response.ok()) {
+      console.log('✓ User registration successful');
+      return true;
+    } else if (responseStatus === 400 || responseStatus === 409) {
+      // User already exists - this is OK, we'll try to login
+      console.log('✓ User already exists (status 400/409) - will attempt login');
+      return true;
+    } else {
+      console.log(`✗ User registration failed: ${responseStatus} - ${responseBody}`);
+      return false;
+    }
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.log(`✗ Registration error: ${errorMsg}`);
+    return false;
+  }
+}
 
 async function getAccessToken(environment: string) {
   let token: string;
@@ -51,11 +107,24 @@ async function getAccessTokenBasic(environment: string) {
   const apiContext: APIRequestContext = await request.newContext();
 
   try {
-    const loginUrl = `${authURL}${autSubUrl}`;
     console.log('');
-    console.log('--- Attempting authentication ---');
-    console.log('URL: ' + loginUrl);
-    console.log('Username: ' + username);
+    console.log('=== Starting Authentication Flow ===');
+    
+    // Step 1: Register user (or ignore if already exists)
+    console.log('');
+    console.log('Step 1: Register/Create User Account');
+    const registrationSuccess = await registerUser(apiContext, authURL, username, password);
+    
+    if (!registrationSuccess) {
+      console.log('⚠ Registration check failed - continuing with login attempt...');
+    }
+
+    // Step 2: Authenticate with credentials
+    console.log('');
+    console.log('Step 2: Authenticate User');
+    const loginUrl = `${authURL}${autSubUrl}`;
+    console.log(`   URL: ${loginUrl}`);
+    console.log(`   Email: ${username}`);
 
     const response = await apiContext.post(loginUrl, {
       headers: {
@@ -65,58 +134,65 @@ async function getAccessTokenBasic(environment: string) {
         email: username,
         password: password,
       },
-    })
+    });
 
     const responseStatus = response.status();
-    console.log('Response Status: ' + responseStatus);
+    console.log(`   Response Status: ${responseStatus}`);
 
     if (!response.ok()) {
       const errorBody = await response.text();
       console.log('');
-      console.log('ERROR: Authentication failed at: ' + loginUrl);
-      console.log('ERROR: Status: ' + responseStatus);
-      console.log('ERROR: Response: ' + errorBody);
+      console.log('❌ ERROR: Authentication failed');
+      console.log(`   URL: ${loginUrl}`);
+      console.log(`   Status: ${responseStatus}`);
+      console.log(`   Response: ${errorBody}`);
       console.log('');
-      console.log('Please verify:');
-      console.log('  1. Username/Email is correct: ' + username);
+      console.log('Troubleshooting:');
+      console.log(`  1. Email is correct: ${username}`);
       console.log('  2. Password is correct');
-      console.log('  3. Account exists on: ' + authURL);
+      console.log(`  3. Account exists on: ${authURL}`);
+      console.log(`  4. Make sure user was registered: ${authURL}/users`);
       throw new Error(
-        'Failed to authenticate - basic: ' + responseStatus + ' - ' + response.statusText()
-      )
+        `Failed to authenticate: ${responseStatus} - ${response.statusText()}`
+      );
     }
 
     // Parse the response to get the access token
     const jsonData = await response.json();
-    console.log('Authentication successful');
-    console.log('Response data: ' + JSON.stringify(jsonData));
+    console.log('✓ Authentication successful');
+    console.log(`   Response keys: ${Object.keys(jsonData).join(', ')}`);
 
     // Try multiple possible token keys
     if (jsonData && jsonData.token) {
       token = jsonData.token;
-      console.log('Token obtained (key: token)');
+      console.log('✓ Token obtained (key: "token")');
       setEnvValue(environment, 'ACCESS_TOKEN', token);
-      console.log('Token saved to .env.' + environment);
+      console.log(`✓ Token saved to .env.${environment}`);
     } else if (jsonData && jsonData.accessToken) {
       token = jsonData.accessToken;
-      console.log('Token obtained (key: accessToken)');
+      console.log('✓ Token obtained (key: "accessToken")');
       setEnvValue(environment, 'ACCESS_TOKEN', token);
-      console.log('Token saved to .env.' + environment);
+      console.log(`✓ Token saved to .env.${environment}`);
     } else if (jsonData && jsonData.access_token) {
       token = jsonData.access_token;
-      console.log('Token obtained (key: access_token)');
+      console.log('✓ Token obtained (key: "access_token")');
       setEnvValue(environment, 'ACCESS_TOKEN', token);
-      console.log('Token saved to .env.' + environment);
+      console.log(`✓ Token saved to .env.${environment}`);
     } else {
       console.log('');
-      console.log('WARNING: No token found in response');
-      console.log('Response keys: ' + Object.keys(jsonData).join(', '));
-      console.log('Full response: ' + JSON.stringify(jsonData));
+      console.log('⚠ WARNING: No token found in response');
+      console.log(`  Response keys: ${Object.keys(jsonData).join(', ')}`);
+      console.log(`  Full response: ${JSON.stringify(jsonData)}`);
     }
+
+    console.log('');
+    console.log('=== Authentication Flow Complete ===');
+    console.log('');
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.log('');
-    console.log('ERROR: Authentication error: ' + errorMsg);
+    console.log(`❌ Authentication error: ${errorMsg}`);
+    console.log('');
   }
 
   // Dispose of the context
@@ -124,24 +200,27 @@ async function getAccessTokenBasic(environment: string) {
 }
 
 function setEnvValue(environment: string, key: string | RegExp, value: string) {
-  const fs = require('fs');
-  const os = require('os');
-  const path = 'configs/.env.' + environment;
+  const envPath = `configs/.env.${environment}`;
 
   // read file from hdd & split if from a line break to a array
-  const ENV_VARS = fs.readFileSync(path, 'utf8').split(os.EOL);
+  const ENV_VARS = fs.readFileSync(envPath, 'utf8').split(os.EOL);
 
   // find the env we want based on the key
-  const target = ENV_VARS.indexOf(
-    ENV_VARS.find((line: string) => {
-      return line.match(new RegExp(key));
-    })
-  );
+  const lineToFind = ENV_VARS.find((line: string) => {
+    return line.match(new RegExp(key));
+  });
+
+  if (!lineToFind) {
+    console.warn(`⚠ Could not find environment variable with key: ${key}`);
+    return;
+  }
+
+  const target = ENV_VARS.indexOf(lineToFind);
 
   // replace the key/value with the new value
   ENV_VARS.splice(target, 1, `${key}=${value}`);
 
   // write everything back to the file system
-  fs.writeFileSync(path, ENV_VARS.join(os.EOL));
+  fs.writeFileSync(envPath, ENV_VARS.join(os.EOL));
 }
 export { getAccessToken, getAccessTokenBasic, setEnvValue };
